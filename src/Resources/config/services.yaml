@@ -1,0 +1,38 @@
+services:
+    adeoweb.sylius_everypay_plugin.payment_gateway:
+        class: Payum\Core\Bridge\Symfony\Builder\GatewayFactoryBuilder
+        arguments:
+            - AdeoWeb\SyliusEveryPayPlugin\Payum\GatewayFactory
+        tags:
+            - { name: payum.gateway_factory_builder, factory: everypay }
+
+    adeoweb.sylius_everypay_plugin.configuration_type:
+        class: AdeoWeb\SyliusEveryPayPlugin\Form\Type\EveryPayConfigurationType
+        tags:
+            - { name: sylius.gateway_configuration_type, type: everypay, label: EveryPay }
+            - { name: form.type }
+
+    adeoweb.sylius_everypay_plugin.payum_action.capture:
+        class: AdeoWeb\SyliusEveryPayPlugin\Payum\Action\CaptureAction
+        public: true
+        arguments:
+            - '@sylius.http_message_factory'
+            - '@sylius.payum.http_client'
+        tags:
+            - { name: payum.action, factory: everypay, alias: payum.action.capture }
+
+    adeoweb.sylius_everypay_plugin.payum_action.status:
+        class: AdeoWeb\SyliusEveryPayPlugin\Payum\Action\StatusAction
+        public: true
+        tags:
+            - { name: payum.action, factory: everypay, alias: payum.action.status }
+
+    adeoweb.sylius_everypay_plugin.payum_action.notify:
+        class: AdeoWeb\SyliusEveryPayPlugin\Payum\Action\NotifyAction
+        public: true
+        arguments:
+            - '@sylius.http_message_factory'
+            - '@sylius.payum.http_client'
+            - '@sylius.repository.payment'
+        tags:
+            - { name: payum.action, factory: everypay, alias: payum.action.notify }
