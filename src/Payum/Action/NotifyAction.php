@@ -5,20 +5,19 @@ declare(strict_types=1);
 namespace AdeoWeb\SyliusEveryPayPlugin\Payum\Action;
 
 use AdeoWeb\SyliusEveryPayPlugin\Doctrine\Repository\PaymentRepositoryInterface;
-use Http\Message\MessageFactory;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
 use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\GatewayAwareInterface;
 use Payum\Core\GatewayAwareTrait;
-use Payum\Core\HttpClientInterface;
 use Payum\Core\Reply\HttpResponse;
 use Payum\Core\Request\GetHttpRequest;
 use Payum\Core\Request\Notify;
 use Symfony\Component\HttpFoundation\Request;
 
-final class NotifyAction extends AbstractAction implements ActionInterface, GatewayAwareInterface, ApiAwareInterface
+final class NotifyAction implements ActionInterface, ApiAwareInterface, GatewayAwareInterface
 {
+    use ApiAwareTrait;
     use GatewayAwareTrait;
 
     private const ENDPOINT_URL_MASK = '/payments/%s/?api_username=%s';
@@ -26,17 +25,14 @@ final class NotifyAction extends AbstractAction implements ActionInterface, Gate
     private const QUERY_PARAM_PAYMENT_REFERENCE = 'payment_reference';
 
     public function __construct(
-        MessageFactory $messageFactory,
-        HttpClientInterface $client,
-        private readonly PaymentRepositoryInterface $paymentRepository,
+        private PaymentRepositoryInterface $paymentRepository,
     ) {
-        parent::__construct($messageFactory, $client);
     }
 
     /**
      * @param Notify $request
      */
-    public function execute($request)
+    public function execute($request): void
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
@@ -47,12 +43,12 @@ final class NotifyAction extends AbstractAction implements ActionInterface, Gate
             throw new HttpResponse('Bad request', 400);
         }
 
-        $paymentDetailsResponse = $this->doExecute(
+        $paymentDetailsResponse = $this->api->performHttpRequest(
             Request::METHOD_GET,
-            $this->buildEndpointUrl($paymentReference, $this->apiConfiguration->getApiUsername()),
+            $this->buildEndpointUrl($paymentReference, $this->api->getApiUsername()),
         );
 
-        $payment->setDetails($this->parseResponseBody($paymentDetailsResponse));
+        $payment->setDetails($this->api->parseResponseBody($paymentDetailsResponse));
 
         $request->setModel($payment);
     }

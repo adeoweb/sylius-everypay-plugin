@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace AdeoWeb\SyliusEveryPayPlugin\Payum\Action;
 
+use ArrayAccess;
 use Payum\Core\Action\ActionInterface;
+use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Core\Reply\HttpRedirect;
 use Payum\Core\Request\GetStatusInterface;
-use Sylius\Component\Core\Model\PaymentInterface;
 
 final class StatusAction implements ActionInterface
 {
@@ -19,12 +19,16 @@ final class StatusAction implements ActionInterface
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
-        /** @var PaymentInterface $payment */
-        $payment = $request->getFirstModel();
-        $details = $payment->getDetails();
+        $details = ArrayObject::ensureArrayObject($request->getModel());
 
-        if ([] === $details) {
+        if (0 === $details->count()) {
             $request->markNew();
+
+            return;
+        }
+
+        if (isset($details['error'])) {
+            $request->markFailed();
 
             return;
         }
@@ -32,10 +36,6 @@ final class StatusAction implements ActionInterface
         switch ($details['payment_state'] ?? null) {
             case 'initial':
                 $request->markNew();
-
-                if ('' !== $details['payment_link'] ?? '') {
-                    throw new HttpRedirect($details['payment_link']);
-                }
 
                 break;
             case 'waiting_for_sca':
@@ -76,6 +76,6 @@ final class StatusAction implements ActionInterface
     {
         return
             $request instanceof GetStatusInterface &&
-            $request->getFirstModel() instanceof PaymentInterface;
+            $request->getModel() instanceof ArrayAccess;
     }
 }

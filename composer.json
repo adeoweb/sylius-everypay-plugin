@@ -6,7 +6,9 @@
     "license": "MIT",
     "require": {
         "php": "^8.0",
-        "php-http/message": "^1.0",
+        "php-http/message-factory": "^1.0",
+        "psr/http-client": "^1.0",
+        "psr/http-message": "^1.0",
         "sylius/sylius": "^1.10",
         "scienta/doctrine-json-functions": "^4.5 || ^5.2"
     },

@@ -4,14 +4,23 @@ declare(strict_types=1);
 
 namespace AdeoWeb\SyliusEveryPayPlugin\Payum\Action;
 
+use ArrayAccess;
+use Payum\Core\Action\ActionInterface;
+use Payum\Core\ApiAwareInterface;
+use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
+use Payum\Core\GatewayAwareInterface;
+use Payum\Core\GatewayAwareTrait;
+use Payum\Core\Reply\HttpRedirect;
 use Payum\Core\Request\Capture;
-use Sylius\Component\Core\Model\PaymentInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-final class CaptureAction extends AbstractAction
+final class CaptureAction implements ActionInterface, ApiAwareInterface, GatewayAwareInterface
 {
     private const ENDPOINT_URL = '/payments/oneoff';
+
+    use ApiAwareTrait;
+    use GatewayAwareTrait;
 
     /**
      * @param Capture $request
@@ -20,44 +29,31 @@ final class CaptureAction extends AbstractAction
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
-        /** @var PaymentInterface $payment */
-        $payment = $request->getModel();
-        $order = $payment->getOrder();
-        $token = $request->getToken();
+        $model = ArrayObject::ensureArrayObject($request->getModel());
 
-        $requestBody = $this->addDefaultBodyParameters(
-            [
-                'amount' => $payment->getAmount() / 100,
-                'customer_url' => $token->getAfterUrl(),
-                'order_reference' => $order->getNumber(),
-                'email' => $order->getCustomer()->getEmail(),
-                'customer_ip' => $order->getCustomerIp(),
-                'integration_details' => self::INTEGRATION_DETAILS,
-            ],
-            $token,
-        );
-
-        $countryCode = $order->getBillingAddress()->getCountryCode();
-        if (in_array($countryCode, self::ALLOWED_COUNTRIES, true)) {
-            $requestBody['preferred_country'] = $countryCode;
+        if ($model->offsetExists('payment_state') || $model->offsetExists('error')) {
+            return;
         }
 
-        $localeCode = substr($order->getLocaleCode(), 0, 2);
-        if (in_array($localeCode, self::ALLOWED_LOCALES, true)) {
-            $requestBody['locale'] = $localeCode;
-        }
+        // TODO: maybe fill in missing values with fallback ones (or not)
 
-        $response = $this->doExecute(
+        $response = $this->api->performHttpRequest(
             Request::METHOD_POST,
             self::ENDPOINT_URL,
-            $requestBody,
+            $model->getArrayCopy(),
         );
 
-        $payment->setDetails($this->parseResponseBody($response));
+        $details = $this->api->parseResponseBody($response);
+
+        $model->exchangeArray($details);
+
+        if ('' !== ($details['payment_link'] ?? '')) {
+            throw new HttpRedirect($details['payment_link']);
+        }
     }
 
     public function supports($request): bool
     {
-        return $request instanceof Capture && $request->getModel() instanceof PaymentInterface;
+        return $request instanceof Capture && $request->getModel() instanceof ArrayAccess;
     }
 }

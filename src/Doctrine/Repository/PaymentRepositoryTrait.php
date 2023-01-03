@@ -20,6 +20,7 @@ trait PaymentRepositoryTrait
             ->setParameter('reference', json_encode($reference), Types::STRING)
             ->setParameter('jsonPath', '$."payment_reference"', Types::STRING)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult()
+        ;
     }
 }

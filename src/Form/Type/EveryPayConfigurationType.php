@@ -42,6 +42,7 @@ final class EveryPayConfigurationType extends AbstractType
                 'constraints' => [
                     new NotBlank(['groups' => 'sylius']),
                 ],
-            ]);
+            ])
+        ;
     }
 }
