@@ -31,10 +31,22 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface, Gateway
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
-        if ($model->offsetExists('payment_state') || $model->offsetExists('error')) {
-            return;
+        if (!$model->offsetExists('payment_state') && !$model->offsetExists('error')) {
+            $this->updateModelForCapture($model);
         }
 
+        if ($model->offsetExists('payment_link') && '' !== $model->get('payment_link')) {
+            throw new HttpRedirect($model->get('payment_link'));
+        }
+    }
+
+    public function supports($request): bool
+    {
+        return $request instanceof Capture && $request->getModel() instanceof ArrayAccess;
+    }
+
+    private function updateModelForCapture(ArrayObject $model): void
+    {
         // TODO: maybe fill in missing values with fallback ones (or not)
 
         $response = $this->api->performHttpRequest(
@@ -46,14 +58,5 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface, Gateway
         $details = $this->api->parseResponseBody($response);
 
         $model->exchangeArray($details);
-
-        if ('' !== ($details['payment_link'] ?? '')) {
-            throw new HttpRedirect($details['payment_link']);
-        }
-    }
-
-    public function supports($request): bool
-    {
-        return $request instanceof Capture && $request->getModel() instanceof ArrayAccess;
     }
 }
