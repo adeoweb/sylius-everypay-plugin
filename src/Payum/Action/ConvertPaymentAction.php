@@ -11,7 +11,7 @@ use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Request\Convert;
 use Sylius\Component\Core\Model\PaymentInterface;
 
-class ConvertPaymentAction implements ActionInterface, ApiAwareInterface
+final class ConvertPaymentAction implements ActionInterface, ApiAwareInterface
 {
     use ApiAwareTrait;
 
@@ -24,6 +24,26 @@ class ConvertPaymentAction implements ActionInterface, ApiAwareInterface
 
         /** @var PaymentInterface $payment */
         $payment = $request->getSource();
+        $details = $payment->getDetails();
+
+        if ([] === $details) {
+            $details = $this->buildDetailsForCapture($request, $payment);
+        }
+
+        $request->setResult($details);
+    }
+
+    public function supports($request): bool
+    {
+        return
+            $request instanceof Convert &&
+            $request->getSource() instanceof PaymentInterface &&
+            $request->getTo() === 'array'
+        ;
+    }
+
+    private function buildDetailsForCapture(Convert $request, PaymentInterface $payment): array
+    {
         $order = $payment->getOrder();
         $token = $request->getToken();
 
@@ -49,15 +69,6 @@ class ConvertPaymentAction implements ActionInterface, ApiAwareInterface
             $details['locale'] = $localeCode;
         }
 
-        $request->setResult($details);
-    }
-
-    public function supports($request): bool
-    {
-        return
-            $request instanceof Convert &&
-            $request->getSource() instanceof PaymentInterface &&
-            $request->getTo() === 'array'
-        ;
+        return $details;
     }
 }
