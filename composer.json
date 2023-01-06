@@ -1,0 +1,31 @@
+{
+    "name": "adeoweb/sylius-everypay-plugin",
+    "type": "sylius-plugin",
+    "keywords": ["sylius", "sylius-plugin"],
+    "description": "EveryPay payment gateway plugin for Sylius.",
+    "license": "MIT",
+    "require": {
+        "php": "^8.0",
+        "php-http/message-factory": "^1.0",
+        "psr/http-client": "^1.0",
+        "psr/http-message": "^1.0",
+        "sylius/sylius": "^1.10",
+        "scienta/doctrine-json-functions": "^4.5 || ^5.2"
+    },
+    "require-dev": {
+        "sylius-labs/coding-standard": "^4.2"
+    },
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "AdeoWeb\\SyliusEveryPayPlugin\\": "src/"
+        }
+    },
+    "extra": {
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": false
+        }
+    }
+}

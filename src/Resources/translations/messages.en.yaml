@@ -1,0 +1,6 @@
+adeoweb_sylius_everypay_plugin:
+    configuration:
+        api_url: API URL
+        api_username: API username
+        api_secret: API secret
+        processing_account: Processing account
