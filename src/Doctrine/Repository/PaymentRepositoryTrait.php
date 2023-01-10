@@ -13,7 +13,7 @@ trait PaymentRepositoryTrait
     {
         return $this->createQueryBuilder('p')
             ->orWhere('JSON_CONTAINS(p.details, :reference, :jsonPath) = 1')
-            ->setParameter('reference', json_encode($reference), Types::STRING)
+            ->setParameter('reference', json_encode($reference, JSON_THROW_ON_ERROR), Types::STRING)
             ->setParameter('jsonPath', '$."payment_reference"', Types::STRING)
             ->getQuery()
             ->getOneOrNullResult()
