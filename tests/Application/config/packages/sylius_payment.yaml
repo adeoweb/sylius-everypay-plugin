@@ -1,0 +1,5 @@
+sylius_payment:
+  resources:
+    payment:
+      classes:
+        repository: Tests\AdeoWeb\SyliusEveryPayPlugin\App\Doctrine\PaymentRepository
