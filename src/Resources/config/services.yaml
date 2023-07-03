@@ -38,6 +38,12 @@ services:
         tags:
             - { name: payum.action, factory: everypay, alias: payum.action.notify }
 
+    adeoweb.sylius_everypay_plugin.payum_action.initiate:
+        class: AdeoWeb\SyliusEveryPayPlugin\Payum\Action\InitiateAction
+        public: true
+        tags:
+            - { name: payum.action, factory: everypay, alias: payum.action.initiate }
+
     adeoweb.sylius_everypay_plugin.extension.update_payment_state:
         public: true
         class: AdeoWeb\SyliusEveryPayPlugin\Extension\UpdatePaymentStateExtension
