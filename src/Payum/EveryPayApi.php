@@ -49,6 +49,8 @@ class EveryPayApi
         'integration' => 'AdeoWeb Sylius EveryPay Plugin',
     ];
 
+    public const QUERY_PARAM_PAYMENT_REFERENCE = 'payment_reference';
+
     protected string $authorizationHeader;
 
     public function __construct(
