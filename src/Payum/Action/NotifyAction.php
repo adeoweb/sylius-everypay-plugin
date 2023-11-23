@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AdeoWeb\SyliusEveryPayPlugin\Payum\Action;
 
 use AdeoWeb\SyliusEveryPayPlugin\Doctrine\Repository\PaymentRepositoryInterface;
+use AdeoWeb\SyliusEveryPayPlugin\Payum\EveryPayApi;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
 use Payum\Core\Exception\RequestNotSupportedException;
@@ -21,8 +22,6 @@ final class NotifyAction implements ActionInterface, ApiAwareInterface, GatewayA
     use GatewayAwareTrait;
 
     private const ENDPOINT_URL_MASK = '/payments/%s/?api_username=%s';
-
-    private const QUERY_PARAM_PAYMENT_REFERENCE = 'payment_reference';
 
     public function __construct(
         private PaymentRepositoryInterface $paymentRepository,
@@ -62,7 +61,7 @@ final class NotifyAction implements ActionInterface, ApiAwareInterface, GatewayA
     {
         $this->gateway->execute($httpRequest = new GetHttpRequest());
         $query = $httpRequest->query;
-        $paymentReference = (string) ($query[self::QUERY_PARAM_PAYMENT_REFERENCE] ?? '');
+        $paymentReference = (string) ($query[EveryPayApi::QUERY_PARAM_PAYMENT_REFERENCE] ?? '');
 
         if ('' === $paymentReference) {
             throw new HttpResponse('Bad request', 400);

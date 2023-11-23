@@ -58,3 +58,13 @@ services:
             - name: payum.extension
               factory: everypay
               alias: adeoweb.sylius_everypay_plugin.extension.update_payment_state
+
+    adeoweb.sylius_everypay_plugin.extension.notify_payment_state:
+        public: true
+        class: AdeoWeb\SyliusEveryPayPlugin\Extension\NotifyPaymentStateExtension
+        arguments:
+            $payum: '@payum'
+        tags:
+            - name: payum.extension
+              factory: everypay
+              alias: adeoweb.sylius_everypay_plugin.extension.notify_payment_state
