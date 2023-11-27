@@ -2,18 +2,8 @@
 
 declare(strict_types=1);
 
-use PhpCsFixer\Fixer\ClassNotation\VisibilityRequiredFixer;
 use Symplify\EasyCodingStandard\Config\ECSConfig;
-use Symplify\EasyCodingStandard\ValueObject\Option;
 
 return static function (ECSConfig $ecsConfig): void {
-    $ecsConfig->import('vendor/sylius-labs/coding-standard/ecs.php');
-
-    $ecsConfig->parameters()->set(Option::PATHS, [
-        __DIR__ . '/src',
-    ]);
-
-    $ecsConfig->parameters()->set(Option::SKIP, [
-        VisibilityRequiredFixer::class => ['*Spec.php'],
-    ]);
+    $ecsConfig->import(__DIR__ . '/vendor/sylius-labs/coding-standard/ecs.php');
 };
